@@ -1,0 +1,320 @@
+{% load static%}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/region.css' %}">
+    <title>{% trans "Квесты Сочи" %}</title>
+</head>
+
+<body>
+    <header>
+        <div class="burger-btn" id="burgerBtn">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+
+        <nav>
+            <ul id="menu">
+                <li id="login"><a href="{% url 'login' %}">{% trans "Вход" %}</a></li>
+                <div class="line-burger"></div>
+                <li id="Explored"><a href="{% url 'explored-places' %}">{% trans "Исследованные места" %}</a></li>
+                <li id="about-us"><a href="#">{% trans "О нас" %}</a></li>
+            </ul>
+        </nav>
+        <div class="overlay" id="overlay"></div>
+    </header>
+
+    <div class = "map-container">
+        <img class = "region-map" src = "{%static 'img/Sochi.png' %}" alt = "Карта достопримечательностей Геленджикского региона" id="interactiveMap">
+        <div class = "kvests" id = "dendrariy" style="--x: 40%; --y: 61.5%;" data-tooltip="Парк Дендрарий">?</div>
+        <div class = "kvests" id = "olimpik-park" style="--x: 53.5%; --y: 71.5%;" data-tooltip="Олимпийский парк">?</div>
+        <div class = "kvests" id = "rosa-hutor" style="--x: 85%; --y: 59%;" data-tooltip="Роза Хутор">?</div>
+        <div class = "kvests" id = "axyn" style="--x: 46%; --y: 63%;" data-tooltip="Гора Ахун">?</div>
+        <div class = "kvests" id = "stalin" style="--x: 42.5%; --y: 63%;" data-tooltip="Дача Сталина">?</div>
+        <div class = "kvests" id = "rivier" style="--x: 38.5%; --y: 60%;" data-tooltip="парк Ривьера">?</div>
+        <div class = "kvests" id = "voron-peweri" style="--x: 55.5%; --y: 59%;" data-tooltip="Воронцовские пещеры">?</div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title"></h2>
+            <div id="modal-body"></div>
+            <div class="image-slider">
+                <button class="slider-arrow prev">❮</button>
+                <div class="slider-container"></div>
+                <button class="slider-arrow next">❯</button>
+            </div>
+            <div class="slider-dots"></div>
+            <button id = "marshrut">Проложить маршрут</button>
+        </div>
+    </div>
+   
+       
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Burger menu toggle
+    const burgerBtn = document.getElementById('burgerBtn');
+    const menu = document.getElementById('menu');
+    const overlay = document.getElementById('overlay');
+    
+    burgerBtn.addEventListener('click', function() {
+        menu.classList.toggle('active');
+        burgerBtn.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+    
+    overlay.addEventListener('click', closeMenu);
+    
+    document.querySelectorAll('#menu a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+    
+    function closeMenu() {
+        menu.classList.remove('active');
+        burgerBtn.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // Координаты достопримечательностей Краснодара
+    const locationsCoordinates = {
+    "dendrariy": [43.5700, 39.7450],      // Парк Дендрарий
+    "olimpik-park": [43.404654, 39.955667], // Олимпийский парк
+    "rosa-hutor": [43.6464, 40.3322],     // Роза Хутор
+    "axyn": [43.55055555555556, 39.843333333333334],           // Гора Ахун
+    "stalin": [43.543928, 39.801260],         // Дача Сталина
+    "rivier": [43.591395, 39.715875],         // парк Ривьера
+    "voron-peweri": [43.612222, 39.936111]    // Воронцовские пещеры
+};
+    // Данные для модальных окон
+    const locationsData = {
+        dendrariy: {
+            title: "Парк Дендрарий",
+            content: "<p>Один из крупнейших ботанических садов России с экзотическими растениями, пальмовыми аллеями и смотровой площадкой. Поднимитесь по канатной дороге для панорамных видов на город и море.</p>",
+            images: [
+                "{% static 'img/Sochi/dendrariy.webp' %}",
+                "{% static 'img/Sochi/dendrariy2.jpg' %}",
+                "{% static 'img/Sochi/dendrariy3.jpg' %}",
+            ]
+        },
+
+        "olimpik-park": {
+            title: "Олмпийский парк",
+            content: "<p>Сердце Зимних Олимпийских игр 2014 года. Здесь находятся стадионы «Фишт» и «Большой ледовый дворец», фонтан «Чаша Олимпийского огня», а также трасса Формулы-1. Вечером включают подсветку и музыкальное шоу фонтанов.</p>",
+            images: [
+                "{% static 'img/Sochi/olimpik.jpg' %}",
+                "{% static 'img/Sochi/olimpik2.jpeg' %}",
+                "{% static 'img/Sochi/olimpik3.jpg' %}",
+            ]
+        },
+        "rosa-hutor": {
+            title: "Роза Хутор",
+            content: "<p>Горный курорт в Красной Поляне. Летом здесь доступны канатные дороги, хайкинг, велотрассы и виды на Кавказские горы. Зимой — это главный горнолыжный курорт региона.</p>",
+            images: [
+                "{% static 'img/Sochi/roza.jpg' %}",
+                "{% static 'img/Sochi/roza2.jpg' %}",
+                "{% static 'img/Sochi/roza3.webp' %}",
+            ]
+        },
+        axyn: {
+            title: "Гора Ахун",
+            content: "<p>Высота 663 м, с башни открывается панорама от Кавказских гор до моря. По пути — Агурские водопады и Орлиные скалы.</p>",
+            images: [
+                "{% static 'img/Sochi/axyn.jpg' %}",
+                "{% static 'img/Sochi/axyn2.jpg' %}",
+                "{% static 'img/Sochi/axyn3.webp' %}",
+            ]
+        },
+        stalin: {
+            title: "Дача Сталина",
+            content: "<p>Музей в здании 1930-х годов с сохранившимися интерьерами. Расположена в зелёной зоне с видом на море. Внутри можно увидеть личные вещи вождя, восковую фигуру Сталина и уникальную систему скрытой вентиляции, сохранившуюся с тех лет.</p>",
+            images: [
+                "{% static 'img/Sochi/stalin.jpg' %}",
+                "{% static 'img/Sochi/stalin2.png' %}",
+                "{% static 'img/Sochi/stalin3.jpg' %}", 
+            ]
+        },
+        rivier: {
+            title: "парк Ривьера",
+            content: "<p>Парк «Ривьера» в Сочи — знаковое место отдыха с пальмовыми аллеями, аттракционами для всех возрастов, летним «Зелёным театром» и символичным «Деревом Дружбы», где на одном стволе растут десятки видов цитрусовых.</p>",
+            images: [
+                "{% static 'img/Sochi/rivier.jpg' %}",
+                "{% static 'img/Sochi/rivier2.webp' %}",
+                "{% static 'img/Sochi/rivier3.jpg' %}", 
+            ]
+        },
+        "voron-peweri": {
+            title: "Воронцовские пещеры",
+            content: "<p>Система подземных залов и тоннелей с сталактитами в 40 км от Сочи. Популярны у любителей спелеологии. Протяжённость ходов — около 11 км, а в гроте «Прометей» можно увидеть уникальные кальцитовые образования, напоминающие застывшие водопады.</p>",
+            images: [
+                "{% static 'img/Sochi/peweri.jpg' %}",
+                "{% static 'img/Sochi/peweri2.webp' %}",
+                "{% static 'img/Sochi/peweri3.jpeg' %}", 
+            ]
+        },
+    }   
+
+     let currentImageIndex = 0;
+    let currentImages = [];
+    let slideInterval;
+    const SLIDE_DELAY = 5000;
+
+    // Marker click handlers
+    document.querySelectorAll('.kvests').forEach(marker => {
+        marker.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentLocationId = this.id;
+            const locationData = locationsData[currentLocationId];
+            
+            if (locationData) {
+                document.getElementById('modal-title').textContent = locationData.title;
+                document.getElementById('modal-body').innerHTML = locationData.content;
+                
+                currentImages = locationData.images || [];
+                currentImageIndex = 0;
+                updateSlider();
+                
+                if (currentImages.length > 1) {
+                    startSlider();
+                }
+                
+                document.getElementById('modal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+
+    // Обработчик кнопки "Проложить маршрут"
+    document.getElementById('marshrut').addEventListener('click', function() {
+    if (currentLocationId && locationsCoordinates[currentLocationId]) {
+        const [lat, lon] = locationsCoordinates[currentLocationId];
+        const locationName = encodeURIComponent(document.getElementById('modal-title').textContent);
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=${userLat},${userLon}~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                }
+            );
+        } else {
+            const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+            window.open(yandexMapsUrl, '_blank');
+        }
+    }
+});
+
+    // Update slider function
+    function updateSlider() {
+        const sliderContainer = document.querySelector('.slider-container');
+        const dotsContainer = document.querySelector('.slider-dots');
+        
+        if (!sliderContainer || !dotsContainer) return;
+        
+        sliderContainer.innerHTML = '';
+        dotsContainer.innerHTML = '';
+        
+        currentImages.forEach((imgSrc, index) => {
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = document.getElementById('modal-title').textContent;
+            img.className = `modal-image ${index === currentImageIndex ? 'active' : ''}`;
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+            sliderContainer.appendChild(img);
+            
+            const dot = document.createElement('span');
+            dot.className = `slider-dot ${index === currentImageIndex ? 'active' : ''}`;
+            dot.addEventListener('click', () => {
+                currentImageIndex = index;
+                updateSlider();
+                startSlider();
+            });
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    // Slider navigation
+    document.querySelector('.next')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    document.querySelector('.prev')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    // Slider autoplay
+    function startSlider() {
+        stopSlider();
+        if (currentImages.length > 1) {
+            slideInterval = setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                updateSlider();
+            }, SLIDE_DELAY);
+        }
+    }
+
+    function stopSlider() {
+        clearInterval(slideInterval);
+    }
+
+    // Modal close functionality
+    function closeModal() {
+        stopSlider();
+        const modal = document.getElementById('modal');
+        modal.classList.add('fade-out');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('fade-out');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    document.querySelector('.close-btn')?.addEventListener('click', closeModal);
+    
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modal')) {
+            closeModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMenu();
+            closeModal();
+        }
+    });
+
+    // Pause slider on hover
+    const sliderContainer = document.querySelector('.slider-container');
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopSlider);
+        sliderContainer.addEventListener('mouseleave', () => {
+            if (currentImages.length > 1) {
+                startSlider();
+            }
+        });
+    }
+});
+    </script>
+
+</body>
+</html>

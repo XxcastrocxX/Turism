@@ -1,0 +1,103 @@
+{% load static%}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>{% trans "Квесты Новороссийска" %}</title>
+</head>
+
+<body>
+    <header>
+        <div class="burger-btn" id="burgerBtn">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+
+        <nav>
+            <ul id="menu">
+                <li id="login"><a href="{% url 'login' %}">{% trans "Вход" %}</a></li>
+                <div class="line-burger"></div>
+                <li id="Explored"><a href="{% url 'explored-places' %}">{% trans "Исследованные места" %}</a></li>
+                <li id="about-us"><a href="#">{% trans "О нас" %}</a></li>
+            </ul>
+        </nav>
+        <div class="overlay" id="overlay"></div>
+    </header>
+   
+       
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+         document.querySelectorAll('.map-svg path').forEach(region => {
+        region.addEventListener('click', function() {
+            const regionId = this.getAttribute('data-id');
+            
+            // Перенаправляем на страницу региона с его ID
+            window.location.href = `/region/${regionId}/`;
+        });
+
+        // Подсказки при наведении (оставляем без изменений)
+        region.addEventListener('mouseenter', (e) => {
+            const tooltip = document.getElementById('map-tooltip');
+            if (tooltip) {
+                tooltip.textContent = region.getAttribute('data-name');
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${e.pageX + 10}px`;
+                tooltip.style.top = `${e.pageY + 10}px`;
+            }
+        });
+        
+        region.addEventListener('mouseleave', () => {
+            const tooltip = document.getElementById('map-tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        });
+    });
+});
+        document.addEventListener('DOMContentLoaded', function() {
+            const burgerBtn = document.getElementById('burgerBtn');
+            const menu = document.getElementById('menu');
+            const overlay = document.getElementById('overlay');
+            const menuLinks = document.querySelectorAll('#menu a');
+            
+            // Открытие/закрытие меню
+            burgerBtn.addEventListener('click', function() {
+                menu.classList.toggle('active');
+                burgerBtn.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            
+            // Закрытие меню при клике на оверлей
+            overlay.addEventListener('click', function() {
+                menu.classList.remove('active');
+                burgerBtn.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Закрытие меню при клике на пункт меню
+            menuLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    menu.classList.remove('active');
+                    burgerBtn.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            });
+            
+            // Закрытие меню при нажатии Esc
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    menu.classList.remove('active');
+                    burgerBtn.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

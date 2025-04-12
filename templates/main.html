@@ -1,0 +1,241 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200&display=swap" rel="stylesheet">
+    <title>Document</title>
+    <style>
+        /* Основные стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #CDF2FF;
+            color: white;
+            font-family: sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Стили для кнопки входа */
+        #login-main {
+            width: 187px;
+            height: 60px;
+            background-color: #FFFFFF;
+            color: #000000;
+            border-radius: 40px;
+            margin: 30px 0 0 calc(100% - 217px);
+            cursor: pointer;
+            position: relative;
+            z-index: 100;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #login-main:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Стили для главного контента */
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: calc(100vh - 100px);
+            position: relative;
+        }
+
+        #first-list-page {
+            font-weight: 300;
+            font-size: 96px;
+            color: #000000;
+            margin: 0 0 0 80px;
+            position: relative;
+            z-index: 60;
+            line-height: 1.2;
+        }
+
+        .main-page-img {
+            width: 1140px;
+            height: 715px;
+            margin: -50px 0 0 300px;
+            position: relative;
+            z-index: 50;
+            pointer-events: none;
+            max-width: 100%;
+        }
+
+        /* Бургер меню и навигация */
+        nav ul {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 368px;
+            height: 1024px;
+            background-color: #BFE7F5;
+            list-style: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            padding: 0;
+            z-index: 99;
+        }
+
+        nav ul.active {
+            right: 0;
+        }
+
+        nav ul li {
+            margin: 15px 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 36px;
+            transition: color 0.3s;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: #007bff;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 98;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Адаптивные стили */
+        @media (max-width: 1200px) {
+            #first-list-page {
+                font-size: 72px;
+            }
+            
+            .main-page-img {
+                width: 900px;
+                height: auto;
+                margin-left: 150px;
+            }
+
+            #login-main {
+                margin: 30px 20px 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #login-main {
+                margin: 20px auto 0;
+                display: block;
+                position: static;
+                width: 150px;
+                height: 50px;
+            }
+            
+            #first-list-page {
+                font-size: 48px;
+                margin: 20px 0 0 20px;
+                text-align: center;
+            }
+            
+            .main-page-img {
+                width: 100%;
+                height: auto;
+                margin: 20px 0 0 0;
+            }
+
+            nav ul {
+                width: 100%;
+                height: 100vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #first-list-page {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{% url 'login' %}"><button id="login-main">Вход</button></a>
+
+    <main>
+        <img class="main-page-img" src="{% static 'img/Group 26.png' %}" alt="main-page-img">
+        <h1 id="first-list-page">Изучайте<br>
+            Фотографируйте<br>
+            Делитесь</h1>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const burgerBtn = document.getElementById('burgerBtn');
+            const menu = document.getElementById('menu');
+            const overlay = document.getElementById('overlay');
+            const menuLinks = document.querySelectorAll('#menu a');
+
+            // Открытие/закрытие меню
+            if (burgerBtn && menu && overlay) {
+                burgerBtn.addEventListener('click', function () {
+                    menu.classList.toggle('active');
+                    burgerBtn.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                });
+
+                // Закрытие меню при клике на оверлей
+                overlay.addEventListener('click', function () {
+                    menu.classList.remove('active');
+                    burgerBtn.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+
+                // Закрытие меню при клике на пункт меню
+                menuLinks.forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        menu.classList.remove('active');
+                        burgerBtn.classList.remove('active');
+                        overlay.classList.remove('active');
+                    });
+                });
+
+                // Закрытие меню при нажатии Esc
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        menu.classList.remove('active');
+                        burgerBtn.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

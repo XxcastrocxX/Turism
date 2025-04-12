@@ -1,0 +1,604 @@
+{%load static%}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #CDF2FF;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #CDF2FF;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-nav-elements {
+            display: flex;
+            width: 289px;
+            height: 132px;
+            margin: 50px 0 0 60px;
+        }
+
+        #main-page-text {
+            font-weight: 500;
+            font-size: 36px;
+            color: #000000;
+        }
+
+        /* Бургер меню */
+        .burger-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 70px;
+            height: 34px;
+            margin: 30px 30px 0 0;
+            cursor: pointer;
+            z-index: 100;
+            padding: 5px 0;
+        }
+
+        .burger-line {
+            width: 70px;
+            height: 6px;
+            background-color: #333;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+
+        #login {
+            margin-top: 100px;
+            margin-left: 70px;
+        }
+
+        #User {
+            margin-top: 50px;
+            margin-left: 70px;
+        }
+
+        .line-burger {
+            width: 296px;
+            height: 3px;
+            background-color: #000000;
+            border-radius: 20px;
+            margin: 0 0 0 40px;
+        }
+
+        #Explored {
+            margin-top: 50px;
+            margin-left: 70px;
+        }
+
+        nav ul {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 368px;
+            height: 100vh;
+            background-color: #BFE7F5;
+            list-style: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            padding: 0;
+            z-index: 99;
+        }
+
+        nav ul.active {
+            right: 0;
+        }
+
+        nav ul li {
+            margin: 15px 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 36px;
+            transition: color 0.3s;
+            display: block;
+        }
+
+        nav ul li a:hover {
+            color: #007bff;
+        }
+
+        .burger-btn.active .burger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .burger-btn.active .burger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .burger-btn.active .burger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 98;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* REGISTRATION */
+        .registration {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .registration-container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #3367d6;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* LOGIN */
+        .login {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 8px;
+            height: 18px;
+        }
+
+        .additional-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .additional-links a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .additional-links a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* Main */
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #map {
+            width: 990px;
+            height: 870px;
+            margin: 20px 0;
+        }
+
+        #login-main {
+            width: 187px;
+            height: 60px;
+            background-color: #FFFFFF;
+            color: #000000;
+            border-radius: 40px;
+            margin: 30px 0 0 1193px;
+            cursor: pointer;
+            position: relative;
+            z-index: 100;
+        }
+
+        #first-list-page {
+            font-weight: 300;
+            font-size: 96px;
+            color: #000000;
+            margin: -300px 0 0 80px;
+        }
+
+        .main-page-img {
+            display: flex;
+            width: 1140px;
+            height: 715px;
+            margin: -50px 0 0 300px;
+            position: relative;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .language-switcher {
+            margin: 20px;
+            text-align: right;
+        }
+
+        .language-select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            font-size: 14px;    
+            cursor: pointer;
+        }
+
+        .language-select:hover {
+            border-color: #aaa;
+        }
+
+        /* Стили для карты */
+        .map{
+            position: relative;
+            text-align: center;
+        }
+        svg{
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+        path{
+            opacity: 0.4;
+            fill: orange;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        path:hover{
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        #map-tooltip {
+            color: black !important;
+            background: white !important;
+        }
+
+        /* Стили для галереи */
+        #reload-link {
+            color: #000000;
+            text-decoration: none;
+            font-size: 36px;
+            font-weight: 500;
+            margin-left: 130px;
+            margin-top: 50px;
+            display: flex;
+        }
+
+        .gallery {
+            margin-top: 50px;
+        }
+
+        .item {
+            display: flex;
+            margin-bottom: 120px;
+            align-items: center;
+            gap: 282px;
+        }
+
+        .item:first-child {
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            margin-right: 130px;
+        }
+
+        .item:nth-child(even) {
+            flex-direction: row;
+            margin-left: 130px;
+        }
+
+        .item:nth-child(odd):not(:first-child) {
+            flex-direction: row-reverse;
+            justify-content: flex-start;
+            margin-right: 130px;
+        }
+
+        .photo-place {
+            width: 500px;
+            height: 500px;
+            background-color: #f0f0f0;
+            border: 10px solid #7BB8D7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            max-width: 400px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .info-line {
+            color: #333;
+            font-size: 24px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            position: relative;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .info-line::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0;
+            width: 150%;
+            height: 1px;
+            background-color: #333;
+            min-width: 100%;
+        }
+
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
+            .header-nav-elements {
+                margin: 30px 0 0 30px;
+            }
+            
+            #main-page-text {
+                font-size: 28px;
+            }
+            
+            .burger-btn {
+                margin: 30px 20px 0 0;
+            }
+            
+            nav ul {
+                width: 100%;
+            }
+
+            #reload-link {
+                margin-left: 30px;
+                font-size: 28px;
+            }
+
+            .item {
+                flex-direction: column;
+                gap: 30px;
+                margin: 0 30px 60px 30px !important;
+            }
+
+            .photo-place {
+                width: 100%;
+                max-width: 500px;
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-nav-elements {
+                margin: 20px 0 0 20px;
+                width: 200px;
+                height: auto;
+            }
+            
+            #main-page-text {
+                font-size: 24px;
+            }
+            
+            .burger-btn {
+                width: 50px;
+                height: 30px;
+                margin: 20px 20px 0 0;
+            }
+            
+            .burger-line {
+                width: 50px;
+                height: 4px;
+            }
+
+            #reload-link {
+                margin-left: 20px;
+                font-size: 24px;
+            }
+
+            .photo-place {
+                height: 200px;
+                border-width: 5px;
+            }
+
+            .info-line {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1><a href="" id="reload-link">{% trans "Исследованные" %}<br>{% trans "места" %}</a></h1>
+    <div class="gallery">
+        <div class="item">
+            <div class="photo-place">
+                [Фото 1]
+            </div>
+            <div class="info">
+                <p class="info-line">{% trans "Местоположение" %}</p>
+                <p class="info-line">{% trans "Дата" %}</p>
+            </div>
+        </div>
+        
+        <div class="item">
+            <div class="photo-place">
+                [Фото 2]
+            </div>
+            <div class="info">
+                <p class="info-line">{% trans "Местоположение" %}</p>
+                <p class="info-line">{% trans "Дата" %}</p>
+            </div>
+        </div>
+        
+        <div class="item">
+            <div class="photo-place">
+                [Фото 3]
+            </div>
+            <div class="info">
+                <p class="info-line">{% trans "Местоположение" %}</p>
+                <p class="info-line">{% trans "Дата" %}</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

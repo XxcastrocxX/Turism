@@ -1,0 +1,320 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Квесты Краснодара" %}</title>
+    <link rel="stylesheet" href = "{% static 'css/region.css' %}">
+</head>
+<body>
+    <header>
+        <div class="burger-btn" id="burgerBtn">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+
+        <nav>
+            <ul id="menu">
+                <li><a href="{% url 'login' %}">{% trans "Вход" %}</a></li>
+                <div class="line-burger"></div>
+                <li><a href="{% url 'explored-places' %}">{% trans "Исследованные места" %}</a></li>
+                <li><a href="#">{% trans "О нас" %}</a></li>
+            </ul>
+        </nav>
+        <div class="overlay" id="overlay"></div>
+    </header>
+
+    <main>
+        <div class="map-container">
+            <img class="region-map" src="{% static 'img/Krasnodar.png' %}" alt="Карта достопримечательностей Краснодара">
+            
+            <div class="kvests" id="ParkKrasnodar" style="--x: 54%; --y: 51%;" data-tooltip="Парк Краснодар">?</div>
+            <div class="kvests" id="SunnyIsland" style="--x: 61%; --y: 61.3%;" data-tooltip="Солнечный Остров">?</div>
+            <div class="kvests" id="KissingBridge" style="--x: 41%; --y: 60%;" data-tooltip="Мост Поцелуев">?</div>
+            <div class="kvests" id="HolyTrinityCathedral" style="--x: 42%; --y: 58%;" data-tooltip="Свято-Троицкий собор">?</div>
+            <div class="kvests" id="KubanCossacks" style="--x: 46%; --y: 53%;" data-tooltip="200 лет Кубанскому казачеству">?</div>
+            <div class="kvests" id="ArtMuseum" style="--x: 46.5%; --y: 60%;" data-tooltip="Музей имени Ф. А. Коваленко">?</div>
+            <div class="kvests" id="MuseumRetroCars" style="--x: 54%; --y: 60%;" data-tooltip="Музей СССР и ретро-автомобилей">?</div>
+        </div>
+
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
+                <div class="image-slider">
+                    <button class="slider-arrow prev">❮</button>
+                    <div class="slider-container"></div>
+                    <button class="slider-arrow next">❯</button>
+                </div>
+                <div class="slider-dots"></div>
+                <button id = "marshrut">Проложить маршрут</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    // Burger menu toggle
+    const burgerBtn = document.getElementById('burgerBtn');
+    const menu = document.getElementById('menu');
+    const overlay = document.getElementById('overlay');
+    
+    burgerBtn.addEventListener('click', function() {
+        menu.classList.toggle('active');
+        burgerBtn.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+    
+    overlay.addEventListener('click', closeMenu);
+    
+    document.querySelectorAll('#menu a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+    
+    function closeMenu() {
+        menu.classList.remove('active');
+        burgerBtn.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // Координаты достопримечательностей Краснодара
+    const locationsCoordinates = {
+        "ParkKrasnodar": [45.041820, 39.032107],  // Парк Краснодар
+        "SunnyIsland": [45.006111, 39.056667],    // Солнечный Остров
+        "KissingBridge": [45.025329, 38.957886],   // Мост Поцелуев
+        "HolyTrinityCathedral": [45.0303, 38.9631], // Свято-Троицкий собор
+        "KubanCossacks": [45.0361, 38.9744],   // 200 лет Кубанскому казачеству
+        "ArtMuseum": [45.0175, 38.9675],       // Музей имени Ф. А. Коваленко
+        "MuseumRetroCars": [45.000150, 39.024398]  // Музей СССР и ретро-автомобилей
+    };
+
+    // Текущая выбранная локация
+    let currentLocationId = null;
+            // Locations data
+            const locationsData = {
+                "ParkKrasnodar": {
+                    title: "Парк Краснодар",
+                    content: "<p>Парк «Краснодар» сочетает просторные аллеи, аттракционы и тематические ландшафты, включая озёра с лебедями и пальмовые рощи. Его визитная карточка — светомузыкальные фонтаны и арт-объекты, например, символическое «Древо жизни».</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/park-krasnodar.webp' %}",
+                        "{% static 'img/Krasnodar/park-krasnodar2.jpg' %}",
+                        "{% static 'img/Krasnodar/park-krasnodar3.jpeg' %}",
+                    ]
+                },
+                "SunnyIsland": {
+                    title: "Солнечный Остров",
+                    content: "<p>Парк «Солнечный Остров» предлагает экстремальные аттракционы, старейший зоопарк Кубани и зоны отдыха у прудов. Летом здесь работают площадки для пикников, а зимой заливают каток и создают новогодние декорации.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/sunny-island.jpg' %}",
+                        "{% static 'img/Krasnodar/sunny-island2.webp' %}",
+                        "{% static 'img/Krasnodar/sunny-island3.jpg' %}",
+                    ]
+                },
+                "KissingBridge": {
+                    title: "Мост Поцелуев", 
+                    content: "<p>Мост Поцелуев — романтичная пешеходная арка с замками любви, подсветкой и панорамным видом на реку Кубань. Местные верят: поцелуй в центре гарантирует крепкие отношения, поэтому здесь всегда многолюдно, особенно на закате.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/kissing-bridge.jpg' %}",
+                        "{% static 'img/Krasnodar/kissing-bridge2.webp' %}",
+                    ]
+                },
+                "HolyTrinityCathedral": {
+                    title: "Свято-Троицкий собор",
+                    content: "<p>Свято-Троицкий собор славится золотыми куполами, резным белокаменным фасадом и богатым интерьером с фресками и чтимой иконой «Целительница». Восстановленный после советского забвения, он остаётся духовным центром для паломников и памятником русско-византийской архитектуры.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/sobor.jpg' %}",
+                        "{% static 'img/Krasnodar/sobor2.webp' %}",
+                        "{% static 'img/Krasnodar/sobor3.webp' %}",
+                    ]
+                },
+                "KubanCossacks": {
+                    title: "200 лет Кубанскому казачеству",
+                    content: "<p>Мемориальный комплекс «200 лет Кубанскому казачеству» — монумент с бронзовыми фигурами казаков и барельефами, изображающими их историю от переселения на Кубань до военных подвигов.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/kazachestvo.jpg' %}",
+                        "{% static 'img/Krasnodar/kazachestvo2.webp' %}",
+                    ]
+                },
+                "ArtMuseum": {
+                    title: "Музей имени Ф. А. Коваленко",
+                    content: "<p>Краснодарский художественный музей им. Ф. А. Коваленко, основанный в 1904 году, — старейший на Северном Кавказе, где собраны шедевры русской и европейской живописи, иконы и современное искусство. Здание в стиле модерн с ажурными балконами и лепниной само является архитектурным памятником.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/kovalenko.jpg' %}",
+                        "{% static 'img/Krasnodar/kovalenko2.jpg' %}",
+                    ]
+                },
+
+
+                "MuseumRetroCars": {
+                    title: "Музей СССР и ретро-автомобилей",
+                    content: "<p>Музей СССР и ретро-автомобилей погружает в эпоху 1930–1990-х годов через легендарные авто («Победа», «Чайка»), артефакты быта и воссозданные интерьеры квартир. Атмосферу усиливают советская музыка, кинохроника и возможность сделать тематические фото.</p>",
+                    images: [
+                        "{% static 'img/Krasnodar/cars.jpg' %}",
+                        "{% static 'img/Krasnodar/cars2.jpg' %}",
+                        "{% static 'img/Krasnodar/cars3.webp' %}",
+                    ]
+                }
+            };
+
+           // Slider functionality
+    let currentImageIndex = 0;
+    let currentImages = [];
+    let slideInterval;
+    const SLIDE_DELAY = 5000;
+
+    // Marker click handlers
+    document.querySelectorAll('.kvests').forEach(marker => {
+        marker.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentLocationId = this.id;
+            const locationData = locationsData[currentLocationId];
+            
+            if (locationData) {
+                document.getElementById('modal-title').textContent = locationData.title;
+                document.getElementById('modal-body').innerHTML = locationData.content;
+                
+                currentImages = locationData.images || [];
+                currentImageIndex = 0;
+                updateSlider();
+                
+                if (currentImages.length > 1) {
+                    startSlider();
+                }
+                
+                document.getElementById('modal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+
+    // Обработчик кнопки "Проложить маршрут"
+    document.getElementById('marshrut').addEventListener('click', function() {
+    if (currentLocationId && locationsCoordinates[currentLocationId]) {
+        const [lat, lon] = locationsCoordinates[currentLocationId];
+        const locationName = encodeURIComponent(document.getElementById('modal-title').textContent);
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=${userLat},${userLon}~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                }
+            );
+        } else {
+            const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+            window.open(yandexMapsUrl, '_blank');
+        }
+    }
+});
+
+    // Update slider function
+    function updateSlider() {
+        const sliderContainer = document.querySelector('.slider-container');
+        const dotsContainer = document.querySelector('.slider-dots');
+        
+        if (!sliderContainer || !dotsContainer) return;
+        
+        sliderContainer.innerHTML = '';
+        dotsContainer.innerHTML = '';
+        
+        currentImages.forEach((imgSrc, index) => {
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = document.getElementById('modal-title').textContent;
+            img.className = `modal-image ${index === currentImageIndex ? 'active' : ''}`;
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+            sliderContainer.appendChild(img);
+            
+            const dot = document.createElement('span');
+            dot.className = `slider-dot ${index === currentImageIndex ? 'active' : ''}`;
+            dot.addEventListener('click', () => {
+                currentImageIndex = index;
+                updateSlider();
+                startSlider();
+            });
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    // Slider navigation
+    document.querySelector('.next')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    document.querySelector('.prev')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    // Slider autoplay
+    function startSlider() {
+        stopSlider();
+        if (currentImages.length > 1) {
+            slideInterval = setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                updateSlider();
+            }, SLIDE_DELAY);
+        }
+    }
+
+    function stopSlider() {
+        clearInterval(slideInterval);
+    }
+
+    // Modal close functionality
+    function closeModal() {
+        stopSlider();
+        const modal = document.getElementById('modal');
+        modal.classList.add('fade-out');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('fade-out');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    document.querySelector('.close-btn')?.addEventListener('click', closeModal);
+    
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modal')) {
+            closeModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMenu();
+            closeModal();
+        }
+    });
+
+    // Pause slider on hover
+    const sliderContainer = document.querySelector('.slider-container');
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopSlider);
+        sliderContainer.addEventListener('mouseleave', () => {
+            if (currentImages.length > 1) {
+                startSlider();
+            }
+        });
+    }
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+{% load static%}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href = "{% static 'css/region.css' %}">
+    <title>{% trans "Квесты Геленджика" %}</title>
+</head>
+
+<body>
+    <header>
+        <div class="burger-btn" id="burgerBtn">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+
+        <nav>
+            <ul id="menu">
+                <li id="login"><a href="{% url 'login' %}">{% trans "Вход" %}</a></li>
+                <div class="line-burger"></div>
+                <li id="Explored"><a href="{% url 'explored-places' %}">{% trans "Исследованные места" %}</a></li>
+                <li id="about-us"><a href="#">{% trans "О нас" %}</a></li>
+            </ul>
+        </nav>
+        <div class="overlay" id="overlay"></div>
+    </header>
+    <main>
+        <div class = "map-container">
+            <img class = "region-map" src = "{%static 'img/Gelendzick.png' %}" alt = "Карта достопримечательностей Геленджикского региона" id="interactiveMap">
+            
+             <div class = "kvests" id = "mayak" style="--x: 29%; --y: 44%;" data-tooltip="Маяк">?</div>
+             <div class = "kvests" id = "sea-castle" style="--x: 30%; --y: 42%;" data-tooltip="Морской замок">?</div>
+             <div class = "kvests" id = "dolmen" style="--x: 35%; --y: 42%;" data-tooltip="Дольмены">?</div>
+             <div class = "kvests" id = "parus" style="--x: 43%; --y: 78%;" data-tooltip="Скала Парус">?</div>
+             <div class = "kvests" id = "rotonda" style="--x: 29%; --y: 50%;" data-tooltip="Ротонда">?</div>
+             <div class = "kvests" id = "underground-hospital" style="--x: 18%; --y: 43%;" data-tooltip="Подземный госпиталь">?</div>
+             <div class = "kvests" id = "wine-farm" style="--x: 21%; --y: 41%;" data-tooltip="Винодельня помещицы Л. Ю. Фирсовой">?</div>
+            </div>
+           
+            <!-- Модальное окно-->
+            <div id="modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2 id="modal-title"></h2>
+                    <div id="modal-body"></div>
+                    <div class="image-slider">
+                        <button class="slider-arrow prev">❮</button>
+                        <div class="slider-container"></div>
+                        <button class="slider-arrow next">❯</button>
+                    </div>
+                    <div class="slider-dots"></div>
+                    <button id = "marshrut">Проложить маршрут</button>
+                </div>
+            </div>
+           
+        </div>
+    </main>
+       
+    
+    <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Burger menu toggle
+    const burgerBtn = document.getElementById('burgerBtn');
+    const menu = document.getElementById('menu');
+    const overlay = document.getElementById('overlay');
+    
+    burgerBtn.addEventListener('click', function() {
+        menu.classList.toggle('active');
+        burgerBtn.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+    
+    overlay.addEventListener('click', closeMenu);
+    
+    document.querySelectorAll('#menu a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+    
+    function closeMenu() {
+        menu.classList.remove('active');
+        burgerBtn.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // Координаты достопримечательностей Краснодара
+    const locationsCoordinates = {
+    "mayak": [44.5503, 38.0503],          // Маяк
+    "sea-castle": [44.57621, 38.08524],     // Морской замок
+    "dolmen": [44.472595, 38.402587],         // Дольмены
+    "parus": [44.438624, 38.184573],          // Скала Парус
+    "rotonda": [44.54908, 38.054702],        // Ротонда
+    "underground-hospital": [44.5668381, 37.9987264 ], // Подземный госпиталь
+    "wine-farm": [44.5816953, 38.0182542]       // Винодельня
+};
+    // Данные для модальных окон
+    const locationsData = {
+        mayak: {
+            title: "Маяк",
+            content: "<p>Геленджикский маяк (1897 г.) — действующий символ города с белоснежной башней, откуда открывается панорама бухты и Маркотхского хребта. Рядом — набережная с кафе для отдыха у моря.</p>",
+            images: [
+                "{% static 'img/Gelendzick/mayak.jpg' %}",
+                "{% static 'img/Gelendzick/mayak2.jpg' %}",
+                "{% static 'img/Gelendzick/mayak3.jpg' %}",
+            ]
+        },
+        "sea-castle": {
+            title: "Морской замок",
+            content: "<p>Морской замок — стилизованный под средневековую крепость комплекс с башнями, рестораном и смотровыми площадками на море. Вечерняя подсветка превращает его в эффектный арт-объект, привлекающий любителей истории и романтики.</p>",
+            images: [
+                "{% static 'img/Gelendzick/sea-castle.jpg' %}",
+                "{% static 'img/Gelendzick/sea-castle2.jpg' %}",
+                "{% static 'img/Gelendzick/sea-castle3.jpeg' %}",
+            ]
+        },
+        dolmen: {
+            title: "Дольмены", 
+            content: "<p>Дольмены под Геленджиком — мегалиты возрастом более 5000 лет, расположенные в предгорьях Маркотхского хребта. Их каменные плиты с орнаментами и легенды о мистическом назначении (от гробниц до «порталов») привлекают любителей загадок древности.</p>",
+            images: [
+                "{% static 'img/Gelendzick/dolmen.jpg' %}",
+                "{% static 'img/Gelendzick/dolmen2.jpg' %}",
+                "{% static 'img/Gelendzick/dolmen3.webp' %}",
+            ]
+        },
+        parus: {
+            title: "Скала Парус",
+            content: "<p>Скала Парус — природный памятник из песчаника, возникший миллионы лет назад из-за выветривания горных пород. Она «отрезана» от берега и возвышается в море, словно каменный корабль, а в её центре есть отверстие — по легенде, его пробил снаряд с корабля во время Кавказской войны.</p>",
+            images: [
+                "{% static 'img/Gelendzick/parus.webp' %}",
+                "{% static 'img/Gelendzick/parus2.jpg' %}",
+            ]
+        },
+        rotonda: {
+            title: "Ротонда",
+            content: "<p>Ротонда — белоснежная колоннада на центральной набережной, ставшая визитной карточкой города. Отсюда открывается панорама на бескрайнее Чёрное море, порт и горные склоны, а вечерняя подсветка превращает её в романтичный арт-объект.</p>",
+            images: [
+                "{% static 'img/Gelendzick/rotonda.jpg' %}",
+                "{% static 'img/Gelendzick/rotonda2.jpg' %}",
+                "{% static 'img/Gelendzick/rotonda3.jpg' %}",
+            ]
+        },
+        "underground-hospital": {
+            title: "Подземный госпиталь",
+            content: "<p>Подземный госпиталь в Геленджике — вырубленный в скале в 1942–1943 гг. военный объект, где спасали раненых, защищённый от бомбёжек. Сегодня это музей с восстановленными интерьерами, экскурсии при свечах погружают в героическое прошлое.</p>",
+            images: [
+                "{% static 'img/Gelendzick/hospital.jpg' %}",
+                "{% static 'img/Gelendzick/hospital2.jpg' %}",
+            ]
+        },
+        "wine-farm": {
+            title: "Винодельня помещицы Л. Ю. Фирсовой",
+            content: "<p>Винодельня Л. Ю. Фирсовой — старейший комплекс 1890-х годов с сохранившимися подвалами, бочками и оборудованием для производства вин «Рислинг» и «Каберне». Сегодня здесь проводят экскурсии по старинным технологиям и дегустации в тени виноградников.</p>",
+            images: [
+                "{% static 'img/Gelendzick/vino.jpg' %}",
+                "{% static 'img/Gelendzick/vino2.jpg' %}",
+            ]
+        }
+    };
+
+       // Slider functionality
+          // Slider functionality
+    let currentImageIndex = 0;
+    let currentImages = [];
+    let slideInterval;
+    const SLIDE_DELAY = 5000;
+
+    // Marker click handlers
+    document.querySelectorAll('.kvests').forEach(marker => {
+        marker.addEventListener('click', function(e) {
+            e.stopPropagation();
+            currentLocationId = this.id;
+            const locationData = locationsData[currentLocationId];
+            
+            if (locationData) {
+                document.getElementById('modal-title').textContent = locationData.title;
+                document.getElementById('modal-body').innerHTML = locationData.content;
+                
+                currentImages = locationData.images || [];
+                currentImageIndex = 0;
+                updateSlider();
+                
+                if (currentImages.length > 1) {
+                    startSlider();
+                }
+                
+                document.getElementById('modal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+
+    // Обработчик кнопки "Проложить маршрут"
+    document.getElementById('marshrut').addEventListener('click', function() {
+    if (currentLocationId && locationsCoordinates[currentLocationId]) {
+        const [lat, lon] = locationsCoordinates[currentLocationId];
+        const locationName = encodeURIComponent(document.getElementById('modal-title').textContent);
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=${userLat},${userLon}~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+                    window.open(yandexMapsUrl, '_blank');
+                }
+            );
+        } else {
+            const yandexMapsUrl = `https://yandex.ru/maps/?rtext=~${lat},${lon}&rtt=mt`;
+            window.open(yandexMapsUrl, '_blank');
+        }
+    }
+});
+
+    // Update slider function
+    function updateSlider() {
+        const sliderContainer = document.querySelector('.slider-container');
+        const dotsContainer = document.querySelector('.slider-dots');
+        
+        if (!sliderContainer || !dotsContainer) return;
+        
+        sliderContainer.innerHTML = '';
+        dotsContainer.innerHTML = '';
+        
+        currentImages.forEach((imgSrc, index) => {
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.alt = document.getElementById('modal-title').textContent;
+            img.className = `modal-image ${index === currentImageIndex ? 'active' : ''}`;
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+            sliderContainer.appendChild(img);
+            
+            const dot = document.createElement('span');
+            dot.className = `slider-dot ${index === currentImageIndex ? 'active' : ''}`;
+            dot.addEventListener('click', () => {
+                currentImageIndex = index;
+                updateSlider();
+                startSlider();
+            });
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    // Slider navigation
+    document.querySelector('.next')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    document.querySelector('.prev')?.addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+        updateSlider();
+        startSlider();
+    });
+
+    // Slider autoplay
+    function startSlider() {
+        stopSlider();
+        if (currentImages.length > 1) {
+            slideInterval = setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+                updateSlider();
+            }, SLIDE_DELAY);
+        }
+    }
+
+    function stopSlider() {
+        clearInterval(slideInterval);
+    }
+
+    // Modal close functionality
+    function closeModal() {
+        stopSlider();
+        const modal = document.getElementById('modal');
+        modal.classList.add('fade-out');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('fade-out');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    document.querySelector('.close-btn')?.addEventListener('click', closeModal);
+    
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modal')) {
+            closeModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeMenu();
+            closeModal();
+        }
+    });
+
+    // Pause slider on hover
+    const sliderContainer = document.querySelector('.slider-container');
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopSlider);
+        sliderContainer.addEventListener('mouseleave', () => {
+            if (currentImages.length > 1) {
+                startSlider();
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>
