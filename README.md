@@ -1,1 +1,1 @@
-По данной дериктории замените папку Django:"myenv/Lib/site-packages"
+По данной директории замените папку Django из rar файла (Директория: "myenv/Lib/site-packages")
